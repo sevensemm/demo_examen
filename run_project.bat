@@ -1,20 +1,22 @@
 @echo off
-chcp 65001 > nul
+cd /d "%~dp0"
 
-echo [1/3] Активация виртуального окружения...
+IF NOT EXIST ".demo_ex_venv\Scripts\activate.bat" (
+    echo [1/4] Создание виртуального окружения...
+    python -m venv .demo_ex_venv
+)
+
+echo [2/4] Активация и установка зависимостей...
 call .demo_ex_venv\Scripts\activate.bat
+pip install -r requirements.txt
 
-echo [2/3] Переход в рабочую папку со скриптами...
-cd /d "%~dp0scr"
-
-echo [3/4] Инициализация базы данных и импорт данных...
+echo [3/4] Инициализация БД и импорт данных...
+cd scr
 python init_db.py
-if %errorlevel% neq 0 (echo Ошибка при инициализации БД! & pause & exit /b)
-
+if %errorlevel% neq 0 (echo Ошибка init_db & pause & exit /b)
 python import_data.py
-if %errorlevel% neq 0 (echo Ошибка при импорте данных из Excel! & pause & exit /b)
+if %errorlevel% neq 0 (echo Ошибка import_data & pause & exit /b)
 
-echo [4/4] Запуск веб-приложения Streamlit...
+echo [4/4] Запуск Streamlit...
 streamlit run app.py
-
 pause
